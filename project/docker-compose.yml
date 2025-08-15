@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sas_legal_postgres
+    environment:
+      POSTGRES_USER: rukioi
+      POSTGRES_PASSWORD: Daniel07
+      POSTGRES_DB: sas_legal
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./server/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - sas_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rukioi -d sas_legal"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  adminer:
+    image: adminer
+    container_name: sas_legal_adminer
+    ports:
+      - "8081:8080"
+    networks:
+      - sas_network
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+networks:
+  sas_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
